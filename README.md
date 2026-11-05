@@ -87,11 +87,10 @@ Wszystkie są w `pyproject.toml`; najważniejsze według zadań:
 | Kacper Bieniasz | 7–8 | PINN-y, supermodel z modeli ODE, SuperNet; miara pokrycia; pomoc w solverach i SA; opieka nad repo |
 | Razem | 1, prezentacje, tabela końcowa | Prezentacje co dwa tygodnie, zakresy parametrów, porównanie wszystkich modeli |
 
-Issue mają etykietę `osoba: …`; etykieta `magisterka` oznacza wyniki, z których Kacper skorzysta w pracy magisterskiej (z podaniem autorstwa).
+Issue mają etykietę `osoba: …`; etykieta `magisterka` oznacza wyniki, które zostaną użyte w pracy magisterskiej.
 
 ## Jak pracujemy
 
 - Gałąź na każde issue (`zad2/solver-b`), PR do `main` z „Closes #N”, review przez drugą osobę.
 - Przed PR: `uv run pytest`, a jeśli zmieniły się notatniki, `uv run reproduce --only <nazwa>`.
 - Raz w tygodniu 30 minut: co zrobione, co blokuje, przegląd tablicy.
-- Laboratoria są indywidualne, więc ich kodu tu nie trzymamy.
