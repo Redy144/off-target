@@ -93,4 +93,3 @@ Issue mają etykietę `osoba: …`; etykieta `magisterka` oznacza wyniki, które
 
 - Gałąź na każde issue (`zad2/solver-b`), PR do `main` z „Closes #N”, review przez drugą osobę.
 - Przed PR: `uv run pytest`, a jeśli zmieniły się notatniki, `uv run reproduce --only <nazwa>`.
-- Raz w tygodniu 30 minut: co zrobione, co blokuje, przegląd tablicy.
