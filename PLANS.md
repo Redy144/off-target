@@ -30,7 +30,7 @@ Repo, środowisko i zasady pracy. Na prezentację 6.11 (pt): solver niejawny, wa
 
 | Issue | Zadanie | Kto |
 | --- | --- | --- |
-| [#1](https://github.com/Redy144/off-target/issues/1) Zaprosić Krzyśka do repo i tablicy, przypisać jego issue | Organizacja | Kacper |
+| [#1](https://github.com/Redy144/off-target/issues/1) Setup repo | Organizacja | Kacper |
 | [#2](https://github.com/Redy144/off-target/issues/2) Uruchomić środowisko u siebie (uv, Jupyter, testy, reproduce) | Organizacja | Krzysiek |
 | [#3](https://github.com/Redy144/off-target/issues/3) Ustalić zasady pracy i cotygodniowe spotkanie | Organizacja | razem |
 | [#4](https://github.com/Redy144/off-target/issues/4) Solver B: schemat niejawny (Crank-Nicolson/IMEX albo BDF) | Zad. 2 | Krzysiek |
