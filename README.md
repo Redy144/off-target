@@ -10,7 +10,7 @@ Model bazowy (1D, jednostki bezwymiarowe):
 
 u to gęstość komórek guza, R(x) to pole wiązki (środek s, połowa szerokości r), U(t) to harmonogram frakcji (impulsy o całce 1), β to log-zabicie jednej frakcji. Mierzymy masę guza M(t) = ∫u dx, najmniejszą masę po leczeniu i czas do odrostu.
 
-**Plan tydzień po tygodniu: [PLANS.md](PLANS.md).** Zadania są w [issue](https://github.com/Redy144/off-target/issues), pogrupowane w kamienie milowe według prezentacji.
+**Plan tydzień po tygodniu: [PLANS.md](PLANS.md).** Zadania są w [issue](https://github.com/Redy144/off-target/issues), pogrupowane w kamienie milowe według prezentacji, i na [tablicy projektu](https://github.com/users/Redy144/projects/2) z polami „Tydzień” i „Kto”.
 
 ## Start
 

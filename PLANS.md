@@ -1,6 +1,6 @@
 # Plan projektu tydzień po tygodniu
 
-Każdy wiersz to issue na GitHubie.
+Każdy wiersz to issue na GitHubie; wszystkie są też na [tablicy projektu](https://github.com/users/Redy144/projects/2).
 Tydzień przy issue to tydzień, w którym zaczynamy pracę; termin oddania wyznacza kamień milowy, czyli najbliższa prezentacja.
 
 ## Terminy prezentacji (piątki)
