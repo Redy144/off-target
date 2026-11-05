@@ -1,0 +1,14 @@
+# Środowisko i pliki tymczasowe
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+
+# Dane i modele odtwarzane komendą `uv run reproduce` (nie trzymamy ich w gicie)
+data/raw/*
+data/processed/*
+results/models/*
+results/notebooks/
+!**/.gitkeep
