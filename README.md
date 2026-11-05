@@ -52,7 +52,7 @@ data/processed/       zbiory do uczenia surogatów (odtwarzane, poza gitem)
 results/figures/      wykresy (w gicie)
 results/tables/       tabele CSV (w gicie)
 results/models/       wytrenowane sieci (poza gitem)
-report/               prezentacje, notatki mówców, notatki z literatury
+report/               opis projektu (README), prezentacje, notatki z literatury
 ```
 
 ## Biblioteki

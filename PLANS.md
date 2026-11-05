@@ -7,7 +7,7 @@ Tydzień przy issue to tydzień, w którym zaczynamy pracę; termin oddania wyzn
 
 | Data | Zadanie prowadzącego | Prowadzi |
 | --- | --- | --- |
-| 23.10 | 1. Literatura, model PDE i jego zachowanie (zrobione, `report/prezentacje/2026-10-23_zad1/`) | razem |
+| 23.10 | 1. Literatura, model PDE i jego zachowanie (zrobione, opis w `report/README.md`) | razem |
 | 6.11 | 2. Solvery i rozdzielczości, skrajne parametry, warunki brzegowe, uproszczenia członów | Krzysiek |
 | 20.11 | 3. Surogat ODE dla masy guza i sieć rezerwuarowa | Krzysiek |
 | 4.12 | 4. SA (Morris, Sobol), PDE_simple i ODE_simple; 5. DA (ABC, 4D-Var) | Krzysiek, Kacper pomaga w SA |
