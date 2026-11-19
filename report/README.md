@@ -141,7 +141,7 @@ Na razie syntetyczne: z naszego solvera, w kilku chwilach i z szumem, tak jak ko
 | 20.11 | 3. Surogat ODE dla masy guza i sieć rezerwuarowa | do zrobienia |
 | 4.12 | 4. Analiza wrażliwości (Morris, Sobol), modele uproszczone; 5. asymilacja danych (ABC, 4D-Var) | do zrobienia |
 | 18.12 | 6. NODE i UDE na modelu ODE | do zrobienia |
-| 15.01 | 7–8. PINN, supermodel z modeli ODE, SuperNet z PINN-ów, porównanie wszystkich modeli | do zrobienia |
+| 15.01 | 7–8. PINN, supermodel z modeli ODE, SuperNet z PINN-ów, porównanie wszystkich modeli | w toku: PINN z terapią odtwarza trzy scenariusze z błędem 1–3% (niżej) |
 
 ## Wyniki: Zadanie 2
 
@@ -173,6 +173,24 @@ Pole za wąskie daje odrost z obu brzegów, pole przesunięte z nienapromienione
 ![Masa guza dla czterech planów](../results/figures/zad2_02_masa.png)
 
 ![Profile gęstości: pole za wąskie i przesunięte](../results/figures/zad2_02_profile.png)
+
+## Wyniki wstępne: Zadanie 7
+
+**PINN z terapią** (`src/offtarget/pinn.py`, notatnik `zad7_01_pinn_terapia`, issue #24). Sieć uczy się w = log(u/K) z samej reszty
+równania, bez danych z solvera. Dostaje na wejściu x, t i liczbę frakcji podanych do chwili t; punkty kolokacji są losowane w każdej
+iteracji i zagęszczone przy impulsach dawki. Jedno ziarno, 30 tys. iteracji.
+
+| Scenariusz | Błąd L2 pola u | Największy błąd M(t) | M_min / M(0): solver, PINN | Czas do odrostu: solver, PINN |
+| --- | --- | --- | --- | --- |
+| pole pokrywa guz | 1,1% | 8,9% (przy masie ok. 3·10⁻⁵ M(0)) | 3,0·10⁻⁵, 2,7·10⁻⁵ | brak, brak |
+| pole za wąskie | 3,3% | 2,8% | 0,78, 0,77 | 2,75, 2,85 |
+| pole przesunięte | 2,2% | 3,0% | 0,51, 0,49 | 5,45, 5,5 |
+
+Uczenie trwa ok. 4,4 min na scenariusz (GPU Apple), a solver B liczy cały przebieg w 0,03 s. Sieć uczona osobno dla każdego planu
+się więc nie opłaca; sens ma dopiero sieć z parametrami planu na wejściu albo w zadaniu odwrotnym (#36, #42, #44).
+Sieć ucząca się samego u przy tym horyzoncie (T = 10) dawała w eksperymentach do magisterki rozwiązanie trywialne u = 0.
+
+![PINN a solver: masa, profile i uczenie](../results/figures/zad7_01_pinn.png)
 
 ## Prezentacje
 
