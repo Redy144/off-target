@@ -1,6 +1,8 @@
 """Wielkości, które mierzymy we wszystkich zadaniach, żeby porównania w Zadaniu 8 liczyły to samo."""
 import numpy as np
 
+from .model import Params
+
 
 def tumor_mass(u: np.ndarray, x: np.ndarray) -> np.ndarray:
     """Masa guza M = całka u dx (wzór trapezów); działa na ostatniej osi, więc też dla u[t, x].
@@ -45,3 +47,33 @@ def time_to_regrowth(t: np.ndarray, M: np.ndarray, threshold: float | None = Non
     i = int(np.argmin(M))
     after = np.flatnonzero(M[i:] >= threshold)
     return float(t[i + after[0]]) if len(after) else float("nan")
+
+
+def coverage(x: np.ndarray, u: np.ndarray, params: Params, level: float = 0.5) -> float | np.ndarray:
+    """Pokrycie planu η = |V_REC ∩ CTV| / |V_REC| (Lipková i in. 2019, sec. III-B); w 1D to długości odcinków.
+
+    V_REC to obszar u >= level * K, czyli guz, który odrósł; pole u w chwili odrostu podaje wywołujący.
+    CTV to pole wiązki [s - r, s + r]. η bliskie 1: guz odrósł w polu (za mała dawka); bliskie 0: odrósł poza
+    polem (pole za wąskie albo przesunięte). Samo M(t) tych dwóch przypadków nie rozróżnia.
+
+    Między węzłami u interpolujemy liniowo, jak w `front_positions`, więc długości nie skaczą o dx, gdy brzeg
+    guza przesuwa się między węzłami. Działa na ostatniej osi (też dla u[t, x]); NaN, gdy V_REC jest pusty.
+    """
+    x = np.asarray(x, dtype=float)
+    u = np.asarray(u, dtype=float)
+    threshold = level * params.K
+
+    # W każdej komórce [x_i, x_{i+1}] interpolacja liniowa przekracza próg na jednym odcinku [lo, hi] (może pustym).
+    xa, xb = x[:-1], x[1:]
+    a, b = u[..., :-1], u[..., 1:]
+    with np.errstate(divide="ignore", invalid="ignore"):
+        cross = xa + (threshold - a) / (b - a) * (xb - xa)  # używane tylko, gdy próg leży między a i b
+    lo = np.where(a >= threshold, xa, np.where(b >= threshold, cross, xa))
+    hi = np.where(b >= threshold, xb, np.where(a >= threshold, cross, xa))
+
+    rec = np.sum(hi - lo, axis=-1)
+    inside = np.sum(np.clip(np.minimum(hi, params.s + params.r) - np.maximum(lo, params.s - params.r), 0.0, None),
+                    axis=-1)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        eta = np.where(rec > 0, inside / rec, np.nan)
+    return float(eta) if eta.ndim == 0 else eta
