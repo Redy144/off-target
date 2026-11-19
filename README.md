@@ -41,7 +41,7 @@ Komenda uruchamia po kolei wszystkie notatniki z `notebooks/` w czystym jądrze,
 src/offtarget/        kod wspólny dla wszystkich zadań
   config.py           ścieżki i ziarno
   model.py            parametry, pole wiązki R(x), harmonogram U(t), warunek początkowy, siatka
-  solvers.py          simulate(params, schedule, x, t_save, u0) -> u[t, x]
+  solvers.py          simulate(params, schedule, x, t_save, u0, method="rk4"|"cn", dose="pulse"|"jump") -> u[t, x]
   observables.py      masa guza, fronty, najmniejsza masa, czas do odrostu
   data.py             zapis i odczyt .npz
   reproduce.py        komenda `uv run reproduce`
