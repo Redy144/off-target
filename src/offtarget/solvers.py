@@ -14,6 +14,7 @@ Dwa modele dawki (argument `dose`):
 - "pulse": człon -beta R(x) U(t) u z impulsami gaussowskimi o całce 1 (model bazowy).
 - "jump": frakcja jako natychmiastowy skok u <- u exp(-beta R(x)) w chwili frakcji, między frakcjami
   samo Fisher-KPP (jak w TumorTwin). Przy tym samym beta daje tę samą frakcję przeżycia co impuls.
+  Zapis w chwili frakcji to stan tuż przed skokiem.
 
 Wszędzie warunek Neumanna (brak przepływu przez brzeg).
 """
@@ -118,25 +119,48 @@ def _make_stepper(method: str, p: Params, schedule: Schedule, R: np.ndarray, dx:
     return step
 
 
+def _jump_times(schedule: Schedule, t_save: np.ndarray, rtol: float = 1e-9) -> Counter:
+    """Frakcje z [t_save[0], t_save[-1]) jako licznik {chwila: liczba frakcji} dla dawki „jump”.
+
+    Frakcję, która mija się z chwilą zapisu tylko o błąd zaokrąglenia (np. 1 + 6 * 0,4 = 3,4000000000000004
+    wobec zapisu w 3,4), przesuwamy dokładnie na chwilę zapisu. Inaczej to, czy zapis widzi stan przed skokiem,
+    czy po nim, zależałoby od ostatniego bitu liczby.
+    """
+    tol = rtol * max(1.0, float(np.max(np.abs(t_save))))
+    jumps: Counter = Counter()
+    for tf in schedule.times:
+        k = int(np.argmin(np.abs(t_save - tf)))
+        tf = float(t_save[k]) if abs(t_save[k] - tf) <= tol else float(tf)
+        if t_save[0] <= tf < t_save[-1]:
+            jumps[tf] += 1
+    return jumps
+
+
 def simulate(params: Params, schedule: Schedule, x: np.ndarray, t_save, u0: np.ndarray | None = None,
              method: str = "rk4", dose: str = "pulse", dt_max: float | None = None) -> np.ndarray:
     """Całkuje model od t_save[0] i zwraca pola u w chwilach t_save, tablica (len(t_save), len(x)).
 
     method: "rk4" (solver A) albo "cn" (solver B), zob. opis modułu.
-    dose: "pulse" (impulsy w U(t)) albo "jump" (skok LQ w chwili frakcji, liczony dla frakcji z (t0, t_end]).
+    dose: "pulse" (impulsy w U(t)) albo "jump" (skok LQ w chwili frakcji). Przy „jump” liczą się frakcje
+        z [t_save[0], t_save[-1]), a zapis w chwili frakcji to stan tuż przed nią. u0 to więc stan przed
+        frakcją w t_save[0], a przebieg [t0, t1], potem [t1, t2] z u0 = u(t1) daje to samo co [t0, t2].
     dt_max: największy krok; domyślnie warunek stabilności dla "rk4" i 0,02 dla "cn".
-    Siatka x musi być równomierna. Krok dobierany jest tak, żeby trafić w każdą chwilę zapisu i frakcji.
+    Siatka x musi być równomierna, a t_save niemalejące. Krok trafia w każdą chwilę zapisu i frakcji.
     """
-    if method not in METHODS or dose not in DOSES:
-        raise ValueError(f"method in {METHODS}, dose in {DOSES}")
+    if method not in METHODS:
+        raise ValueError(f"method musi być jednym z {METHODS}, jest {method!r}")
+    if dose not in DOSES:
+        raise ValueError(f"dose musi być jednym z {DOSES}, jest {dose!r}")
+    t_save = np.asarray(t_save, dtype=float)
+    if np.any(np.diff(t_save) < 0):
+        raise ValueError("t_save musi być niemalejące")
     x = np.asarray(x, dtype=float)
     dx = x[1] - x[0]
-    t_save = np.asarray(t_save, dtype=float)
     u = initial_condition(x, K=params.K) if u0 is None else np.array(u0, dtype=float)
     R = beam(x, params)
 
     smooth = schedule if dose == "pulse" else NO_TREATMENT
-    jumps = Counter(t for t in schedule.times if t_save[0] < t <= t_save[-1]) if dose == "jump" else Counter()
+    jumps = _jump_times(schedule, t_save) if dose == "jump" else Counter()
     if dt_max is None:
         dt_max = stable_dt(dx, params.D, smooth) if method == "rk4" else 0.02
     step = _make_stepper(method, params, smooth, R, dx, len(x))
@@ -145,22 +169,20 @@ def simulate(params: Params, schedule: Schedule, x: np.ndarray, t_save, u0: np.n
     for j, ts in enumerate(t_save):
         save_at.setdefault(float(ts), []).append(j)
     out = np.empty((len(t_save), len(x)))
-    for j in save_at.pop(float(t_save[0])):
-        out[j] = u
 
     t = float(t_save[0])
     for te in sorted(set(save_at) | set(jumps)):
-        span = te - t
-        n_steps = max(1, int(np.ceil(span / dt_max - 1e-9)))
-        h = span / n_steps
-        for _ in range(n_steps):
-            u = step(t, u, h)
-            t += h
-        t = te
+        if te > t:
+            n_steps = max(1, int(np.ceil((te - t) / dt_max - 1e-9)))
+            h = (te - t) / n_steps
+            for _ in range(n_steps):
+                u = step(t, u, h)
+                t += h
+            t = te
+        for j in save_at.get(te, ()):
+            out[j] = u  # stan tuż przed frakcją w tej chwili
         if te in jumps:
             u = u * np.exp(-params.beta * R * jumps[te])
-        for j in save_at.get(te, ()):
-            out[j] = u
     return out
 
 
