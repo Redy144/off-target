@@ -30,9 +30,9 @@ Repo, środowisko i zasady pracy. Na prezentację 6.11 (pt): solver niejawny, wa
 
 | Issue | Zadanie | Kto |
 | --- | --- | --- |
-| [#1](https://github.com/Redy144/off-target/issues/1) Zaprosić Krzyśka do repo i tablicy, przypisać jego issue | Organizacja | Kacper |
+| [#1](https://github.com/Redy144/off-target/issues/1) Setup repo | Organizacja | Kacper |
 | [#2](https://github.com/Redy144/off-target/issues/2) Uruchomić środowisko u siebie (uv, Jupyter, testy, reproduce) | Organizacja | Krzysiek |
-| [#3](https://github.com/Redy144/off-target/issues/3) Ustalić zasady pracy i cotygodniowe spotkanie | Organizacja | razem |
+| [#3](https://github.com/Redy144/off-target/issues/3) Ustalić zasady pracy | Organizacja | razem |
 | [#4](https://github.com/Redy144/off-target/issues/4) Solver B: schemat niejawny (Crank-Nicolson/IMEX albo BDF) | Zad. 2 | Krzysiek |
 | [#5](https://github.com/Redy144/off-target/issues/5) Solver C: dawka jako natychmiastowy skok LQ | Zad. 2 | Krzysiek |
 | [#6](https://github.com/Redy144/off-target/issues/6) Testy poprawności i zgodności solverów A, B, C | Zad. 2 | Krzysiek |
@@ -143,19 +143,16 @@ Nowy plan wiązki i prawda spoza klasy modeli; tabela wszystkich modeli. Laborat
 
 ## Tydzień 11: 11–17.01 · Prezentacja 15.01
 
-Zadania 7–8 i state of research.
+Zadania 7–8 i state of research. Przed prezentacją odtwarzamy wszystkie wyniki z czystego klonu.
 
 | Issue | Zadanie | Kto |
 | --- | --- | --- |
 | [#48](https://github.com/Redy144/off-target/issues/48) Prezentacja 15.01: Zadania 7–8 i state of research | Zad. 8 | razem |
+| [#49](https://github.com/Redy144/off-target/issues/49) Odtworzenie wszystkich wyników z czystego klonu | Organizacja | razem |
 
 ## Tydzień 12: 18–24.01 · Zamknięcie
 
-Odtworzenie wyników z czystego klonu. Wykład o PINN-ach i supermodelingu 21.01.
-
-| Issue | Zadanie | Kto |
-| --- | --- | --- |
-| [#49](https://github.com/Redy144/off-target/issues/49) Odtworzenie wszystkich wyników z czystego klonu | Organizacja | razem |
+Wykład o PINN-ach i supermodelingu 21.01. Zadań projektu już nie ma.
 
 ## Ryzyka
 
