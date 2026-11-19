@@ -50,7 +50,9 @@ def time_to_regrowth(t: np.ndarray, M: np.ndarray, threshold: float | None = Non
 
 
 def coverage(x: np.ndarray, u: np.ndarray, params: Params, level: float = 0.5) -> float | np.ndarray:
-    """Pokrycie planu η = |V_REC ∩ CTV| / |V_REC| (Lipková i in. 2019, sec. III-B); w 1D to długości odcinków.
+    """Pokrycie planu η = |V_REC ∩ CTV| / |V_REC| (Lipková i in. 2019, sec. III-C, eq. 11).
+
+    W 1D objętości to długości odcinków.
 
     V_REC to obszar u >= level * K, czyli guz, który odrósł; pole u w chwili odrostu podaje wywołujący.
     CTV to pole wiązki [s - r, s + r]. η bliskie 1: guz odrósł w polu (za mała dawka); bliskie 0: odrósł poza

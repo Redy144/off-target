@@ -25,7 +25,7 @@ Temat z listy prowadzącego: „Radioterapia — wpływ niedopasowania pola prom
 | ρu(1 − u/K) | wzrost: komórki dzielą się, aż wypełnią dostępne miejsce K |
 | βR(x)U(t)u | radioterapia: R(x) to pole wiązki, U(t) harmonogram dawek, β wrażliwość komórek |
 
-Liczymy w 1D, w jednostkach bezwymiarowych: czas w 1/ρ, długość w √(D/ρ), gęstość w K. 2D tylko, jeśli starczy czasu.
+Liczymy w 1D, w jednostkach bezwymiarowych: czas w 1/ρ, długość w √(D/ρ), gęstość w K (przeliczenie na dni i mm niżej, w „Jednostki i zakresy parametrów”). 2D tylko, jeśli starczy czasu.
 
 **Dawka.** Każda frakcja to wąski impuls w U(t) o całce 1, więc w środku wiązki jedna frakcja zostawia ułamek e^(−β) komórek (S = exp(−∫βU dt)). Dawki zapisane jako gładkie impulsy mają też Szubert, Bialy, Dzwinel (eq. 1–4). Odpowiednik modelu liniowo-kwadratowego to β = α·d + β_LQ·d²: dla frakcji 2 Gy i parametrów z TumorTwin (α = 0,05 Gy⁻¹, β_LQ = 0,005 Gy⁻²) β ≈ 0,12.
 
@@ -42,6 +42,62 @@ Liczymy w 1D, w jednostkach bezwymiarowych: czas w 1/ρ, długość w √(D/ρ),
 
 **Co mierzymy:** masę guza M(t) = ∫u dx, najmniejszą masę po leczeniu, czas do odrostu i położenie frontów.
 
+### Jednostki i zakresy parametrów
+
+Jednostki modelu bierzemy od pacjenta odniesienia z Swanson i in. 2008: ρ₀ = 0,012/dzień i mediana D/ρ = 9,83 mm², czyli D₀ = 0,118 mm²/dzień. Jednostka czasu to wtedy 1/ρ₀ = 83,3 dnia, jednostka długości √(D₀/ρ₀) = 3,14 mm, a front biegnie z prędkością 2√(D₀ρ₀) = 0,075 mm/dzień. Pacjent o innych D i ρ ma w modelu D/D₀ i ρ/ρ₀. β na frakcję jest w obu układach to samo, bo impuls dawki ma całkę 1 w każdych jednostkach czasu. Przeliczenia i zakresy są w kodzie: `src/offtarget/units.py`.
+
+**Wartości z literatury** (D w mm²/dzień, ρ w 1/dzień):
+
+| Wielkość | Fizycznie | W modelu | Źródło |
+| --- | --- | --- | --- |
+| D_w, rozkład a priori (log-jednostajny) | 0,013–3,8 | 0,11–32 | Lipková i in. 2019, mat. uzup. sec. A (za Harpold i in. 2007) |
+| D_w, MAP dla 8 pacjentów | 0,060 (P2) – 2,447 (P5) | 0,51–20,7 | tamże, mat. uzup. tab. I |
+| ρ, rozkład a priori (log-jednostajny) | 0,0027–0,19 | 0,23–15,8 | tamże, mat. uzup. sec. A |
+| ρ, MAP dla 8 pacjentów | 0,007 (P7) – 0,107 (P5) | 0,58–8,9 | tamże, mat. uzup. tab. I |
+| D w istocie szarej | D_g = D_w / 10 | | tamże, sec. II-A |
+| ρ przyjęte dla 70 pacjentów | 0,012 | 1 (odniesienie) | Swanson i in. 2008, „Data analysis” |
+| D/ρ z MRI, 70 pacjentów | mediana 9,83 mm², zakres 0,24–35,92 mm² | √(D/ρ) = 3,14 mm (odniesienie), zakres 0,49–5,99 mm | tamże |
+| prędkość frontu | mediana 0,075 mm/dzień, zakres 0,0118–0,1438 | 2 (odniesienie), zakres 0,31–3,8 | tamże; liczona wzorem Fishera z D/ρ i ρ = 0,012, więc to nie niezależny pomiar |
+| TumorTwin, pacjent in silico | k = 0,05, D = 0,1* | ρ = 4,17, D = 0,85 | Kapteyn i in. 2025, sec. 4.2 |
+| α_RT, β_RT | 0,05 Gy⁻¹, 0,005 Gy⁻² (α/β = 10 Gy) | β = 0,12 na frakcję 2 Gy | tamże, sec. 4.2 |
+| α na start kalibracji (LUMIERE) | 0,025 Gy⁻¹ przy α/β = 10 Gy | β = 0,06 na frakcję 2 Gy | repo TumorTwin, `examples/lumiere_pipeline.py` |
+| schemat | 30 × 2 Gy, 5 dni w tygodniu przez 6 tygodni | odstęp 0,012 (przez weekend 0,036), cały kurs 0,47 | Kapteyn i in. 2025, sec. 4.1 |
+| margines CTV wg RTOG | 2 cm wokół widocznego guza | 6,4 | Lipková i in. 2019, sec. III-C |
+| margines CTV w GliODIL | 15 mm | 4,8 | Balcerak i in. 2025 (GliODIL) |
+
+\* Jednostka D w TumorTwin jest niespójna: sec. 2.2.3 podaje mm²/dzień, a sec. 4.2 mm²/s. Przyjmujemy mm²/dzień, bo tylko ta mieści się w zakresach Lipkovej.
+
+**Zakresy do przeglądów parametrów (#12) i analizy wrażliwości (#27)**, w jednostkach modelu (`model_ranges()` w `units.py`):
+
+| Parametr | Zakres | Pacjent odniesienia | Uwagi |
+| --- | --- | --- | --- |
+| D | 0,11–32 | 1 | losować log-jednostajnie, jak w rozkładzie a priori Lipkovej |
+| ρ | 0,23–15,8 | 1 | jw. |
+| β na frakcję 2 Gy | 0,06–0,12 | 0,12 | α = 0,025–0,05 Gy⁻¹ przy α/β = 10 Gy |
+| harmonogram | `clinical_schedule()` | 30 frakcji co 0,012, przerwy weekendowe | impuls szeroki na 0,05 dnia |
+
+Prostokąt D × ρ zawiera pary, dla których D/ρ (od 0,07 do 1400 mm²) wychodzi daleko poza zmierzone u Swanson (0,24–35,92 mm²). Czy SA ma losować z prostokąta, czy ograniczyć D/ρ, rozstrzygamy w #27.
+
+**Ilustracja z 23.10 w jednostkach fizycznych** (pacjent odniesienia):
+
+| Wielkość | W modelu | Fizycznie |
+| --- | --- | --- |
+| promień guza | 6 | 19 mm |
+| obszar | 80 | 251 mm |
+| połowa szerokości pola r | 20 / 8 / 3 | 63 / 25 / 9,4 mm |
+| przesunięcie pola s | 6 | 19 mm |
+| szerokość półcienia w | 0,5 | 1,6 mm |
+| odstęp frakcji | 0,4 | 33 dni (klinicznie 1 dzień) |
+| szerokość impulsu | 0,05 | 4,2 dnia |
+| czas symulacji | 10 | 833 dni |
+| β na frakcję | 1,5 / 0,45 | tyle co jedna frakcja 13 / 5,7 Gy (klinicznie 2 Gy, β = 0,12) |
+
+Wnioski:
+
+- **Dawki i harmonogram ilustracji są dalekie od klinicznych.** Frakcje są 33 razy rzadsze, a każda zabija ok. 12 razy więcej w skali logarytmicznej (β = 1,5 wobec 0,12). Łącznie ilustracja daje β = 15, a kliniczny kurs 30 × 2 Gy tylko 1,8–3,6: bez wzrostu w trakcie kursu w polu przeżyłoby 3–17% komórek.
+- **Kliniczny kurs trwa 0,47 jednostki czasu.** Domyślna szerokość impulsu w `Schedule` (0,05, czyli 4,2 dnia) jest wtedy większa od odstępu między frakcjami i impulsy by się nakładały. Dlatego `clinical_schedule()` podaje szerokość w dniach.
+- **Ta sama geometria w mm to u różnych pacjentów inne r i s w modelu.** Skala długości √(D/ρ) zmienia się u Swanson od 0,5 do 6 mm, więc margines 2 cm to w modelu od 3,3 do 41 jednostek.
+
 ## Trzy sytuacje
 
 | Sytuacja | Czego się spodziewamy |
@@ -52,7 +108,7 @@ Liczymy w 1D, w jednostkach bezwymiarowych: czas w 1/ρ, długość w √(D/ρ),
 
 Uzasadnienie: poza polem R(x) = 0, więc człon radioterapii znika. Komórki, które tam zostały, dalej się dzielą i wędrują z powrotem w leczony obszar.
 
-Pierwsza symulacja (`notebooks/00_start_scenariusze.ipynb`) potwierdza to jakościowo. Dawki są w niej ilustracyjne (β = 1,5 i 0,45, frakcje co 0,4 jednostki czasu), a nie kliniczne.
+Pierwsza symulacja (`notebooks/00_start_scenariusze.ipynb`) potwierdza to jakościowo. Dawki są w niej ilustracyjne (β = 1,5 i 0,45, frakcje co 0,4 jednostki czasu), a nie kliniczne; przeliczenie na dni, mm i Gy jest w „Jednostki i zakresy parametrów”.
 
 ![Masa guza dla trzech planów i odrost przy przesuniętej wiązce](../results/figures/00_scenariusze.png)
 
@@ -64,7 +120,9 @@ Pierwsza symulacja (`notebooks/00_start_scenariusze.ipynb`) potwierdza to jakoś
 | Unkelbach i in. 2014, Phys. Med. Biol. 59, 747 | Pole napromieniania wyznaczane z modelu wzrostu guza, a nie tylko z obrazu |
 | Balcerak i in. 2025, Nature Communications 16:5982 (GliODIL) | Plan z modelu obejmuje 67,8% późniejszego nawrotu, standardowy margines 15 mm 63,6% (rys. 5d, 152 pacjentów); koszt 45 ± 20 min na pacjenta (s. 14) |
 | Szubert, Bialy, Dzwinel 2026, wersja robocza (AGH) | To samo równanie w 2D, ale z terapią jednorodną w przestrzeni, bez profilu wiązki R(x) (eq. 1–4). Dwa modele zastępcze: VAE (100 symulacji w 0,77 s wobec 17 s solvera, tab. 4) i PINN osobny dla każdego scenariusza (sec. 7–9) |
-| Lipková i in. 2019, IEEE TMI 38 | Plan dopasowany do pacjenta i miara skuteczności planu η = \|V_REC ∩ CTV\| / V_REC (sec. III-B); zakresy D i ρ |
+| Lipková i in. 2019, IEEE TMI 38 | Plan dopasowany do pacjenta i miara skuteczności planu η = \|V_REC ∩ CTV\| / V_REC (sec. III-C, eq. 11); zakresy D i ρ (mat. uzup. sec. A, tab. I) |
+| Swanson, Rostomily, Alvord 2008, Br J Cancer 98:113–119 | ρ = 0,012/dzień i D/ρ z MRI 70 pacjentów: skale jednostek modelu |
+| Kapteyn i in. 2025, arXiv 2505.00670 (TumorTwin) | Dawka jako skok LQ (eq. 5), α i β_LQ, schemat 30 × 2 Gy (sec. 4.1–4.2) |
 
 Prędkość frontu 2√(Dρ) bez leczenia podaje Martín-Landrove 2017 (eq. 6); nasz solver ją potwierdza.
 
