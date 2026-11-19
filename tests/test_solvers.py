@@ -103,10 +103,61 @@ def test_schedule_integral_counts_fractions():
     assert abs(sch.integral(0.0, 1.0) - 0.5) < 1e-12  # połowa pierwszego impulsu
 
 
-def test_unknown_method_raises():
+@pytest.mark.parametrize("kwargs", [{"method": "euler"}, {"dose": "jumps"}])
+def test_unknown_method_or_dose_raises(kwargs):
     x, _ = grid(10.0, 10)
     with pytest.raises(ValueError):
-        simulate(Params(), NO_TREATMENT, x, [0.0, 1.0], method="euler")
+        simulate(Params(), NO_TREATMENT, x, [0.0, 1.0], **kwargs)
+
+
+def test_unsorted_t_save_raises():
+    x, _ = grid(10.0, 10)
+    with pytest.raises(ValueError):
+        simulate(Params(), Schedule.regular(3, 1.0, 0.5), x, [0.0, 10.0, 2.0], dose="jump")
+
+
+# Skok LQ: same zabijanie (D = rho = 0), więc stan zmienia się tylko w chwilach frakcji.
+KILL_ONLY = Params(D=0.0, rho=0.0, beta=0.7)
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_jump_save_at_fraction_is_pre_jump_despite_rounding(method):
+    """Frakcje z Schedule.regular(10, 1, 0,4) to m.in. 3,4000000000000004; zapis w 3,4 ma widzieć stan przed nią,
+    tak samo jak przy frakcjach, które trafiają w chwilę zapisu dokładnie (np. 3,0)."""
+    x, _ = grid(40.0, 200)
+    sch = Schedule.regular(n=10, start=1.0, interval=0.4)
+    assert 3.4 not in sch.times  # warunek testu: ta frakcja mija się z 3,4 o błąd zaokrąglenia
+    t = np.round(np.linspace(0.0, 5.0, 101), 10)
+    u0 = initial_condition(x)
+    u = simulate(KILL_ONLY, sch, x, t, u0=u0, method=method, dose="jump")
+    survival = np.exp(-KILL_ONLY.beta * beam(x, KILL_ONLY))
+    for i, tf in enumerate(sch.times):
+        k = int(np.argmin(np.abs(t - tf)))
+        np.testing.assert_allclose(u[k], u0 * survival**i, rtol=1e-12, err_msg=f"frakcja {tf!r}")
+        np.testing.assert_allclose(u[k + 1], u0 * survival ** (i + 1), rtol=1e-12, err_msg=f"frakcja {tf!r}")
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_jump_fraction_at_start_is_applied(method):
+    """Frakcja w chwili t_save[0] działa: u0 to stan tuż przed nią, a skok i impuls dają tę samą frakcję przeżycia."""
+    x, _ = grid(40.0, 200)
+    sch = Schedule((0.0,), width=0.01)
+    u0 = initial_condition(x)
+    u = simulate(KILL_ONLY, sch, x, [0.0, 1.0], u0=u0, method=method, dose="jump")
+    np.testing.assert_array_equal(u[0], u0)
+    np.testing.assert_allclose(u[1], u0 * np.exp(-KILL_ONLY.beta * beam(x, KILL_ONLY)), rtol=1e-12)
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_jump_runs_can_be_chained(method):
+    """Przebieg [0, 2] i dalej [2, 4] od u(2) daje to samo co [0, 4], także z frakcją dokładnie w t = 2."""
+    x, _ = grid(80.0, 400)
+    p = Params(beta=0.45)
+    sch = Schedule.regular(n=5, start=1.0, interval=0.5)  # frakcje 1,0 ... 3,0, w tym 2,0
+    full = simulate(p, sch, x, [0.0, 2.0, 4.0], method=method, dose="jump")
+    first = simulate(p, sch, x, [0.0, 2.0], method=method, dose="jump")
+    second = simulate(p, sch, x, [2.0, 4.0], u0=first[-1], method=method, dose="jump")
+    np.testing.assert_allclose(second[-1], full[-1], rtol=1e-12, atol=1e-15)
 
 
 def test_save_and_load_roundtrip(tmp_path):
