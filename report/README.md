@@ -79,11 +79,42 @@ Na razie syntetyczne: z naszego solvera, w kilku chwilach i z szumem, tak jak ko
 | Data | Zadanie | Stan |
 | --- | --- | --- |
 | 23.10 | 1. Literatura, model PDE i jego zachowanie | zrobione |
-| 6.11 | 2. Solvery i rozdzielczości, skrajne parametry, warunki brzegowe, uproszczenia członów | w toku: solver RK4 i testy w `src/offtarget/` |
+| 6.11 | 2. Solvery i rozdzielczości, skrajne parametry, warunki brzegowe, uproszczenia członów | w toku: dwa solvery, dwa modele dawki, tabela błąd a czas, cztery scenariusze (niżej); brakuje warunków brzegowych, skrajnych parametrów, uproszczeń członów i mapy niedopasowania |
 | 20.11 | 3. Surogat ODE dla masy guza i sieć rezerwuarowa | do zrobienia |
 | 4.12 | 4. Analiza wrażliwości (Morris, Sobol), modele uproszczone; 5. asymilacja danych (ABC, 4D-Var) | do zrobienia |
 | 18.12 | 6. NODE i UDE na modelu ODE | do zrobienia |
 | 15.01 | 7–8. PINN, supermodel z modeli ODE, SuperNet z PINN-ów, porównanie wszystkich modeli | do zrobienia |
+
+## Wyniki: Zadanie 2
+
+**Solvery** (`src/offtarget/solvers.py`, notatnik `zad2_01_rozdzielczosc`):
+
+- **A, RK4:** różnice centralne w x i jawny RK4. Krok czasu ogranicza warunek stabilności dyfuzji Δt ≤ 0,4·Δx²/D.
+- **B, Crank-Nicolson:** rozszczepienie Stranga, czyli pół kroku reakcji, krok dyfuzji schematem Cranka-Nicolsona i pół kroku reakcji. Reakcja i dawka są liczone dokładnie w każdym węźle, więc krok czasu jest dowolny.
+- Oba mają rząd zbieżności 2 w Δx i zbiegają do tego samego rozwiązania.
+- Przy tej samej dokładności B jest ok. 16 razy szybszy (Δx = 0,05: 0,05 s wobec 0,76 s).
+- Przy Δt = 0,1 B liczy w kilka milisekund z błędem masy ok. 10⁻³. To wystarczy do przeglądów parametrów.
+
+![Zbieżność i błąd a czas obliczeń](../results/figures/zad2_01_blad_czas.png)
+
+**Testy** (`tests/test_solvers.py`, 16 testów): rząd zbieżności 2 wobec dokładnej fali biegnącej, zachowanie masy przy samej dyfuzji, frakcja przeżycia e^(−β) przy samym zabijaniu, prędkość frontu zgodna z 2√(Dρ) z poprawką Bramsona, zgodność solverów A i B.
+
+**Scenariusze** (notatnik `zad2_02_scenariusze`, dawki ilustracyjne):
+
+| Plan | Najmniejsza masa / M(0) | Czas do odrostu |
+| --- | --- | --- |
+| pole pokrywa guz, duża dawka | ≈ 0 | brak do t = 10 |
+| pole pokrywa guz, mała dawka | 0,20 | 6,85 |
+| pole za wąskie | 0,78 | 2,75, jeszcze w trakcie frakcji |
+| pole przesunięte | 0,51 | 5,45 |
+
+Pole za wąskie daje odrost z obu brzegów, pole przesunięte z nienapromienionej strony, tak jak przewidywaliśmy.
+
+**Dwa modele dawki:** gładki impuls (model bazowy) i natychmiastowy skok LQ (jak w TumorTwin). Po leczeniu różnią się o najwyżej 0,4% masy, więc impulsy, wygodne dla PINN-ów, dobrze przybliżają skok.
+
+![Masa guza dla czterech planów](../results/figures/zad2_02_masa.png)
+
+![Profile gęstości: pole za wąskie i przesunięte](../results/figures/zad2_02_profile.png)
 
 ## Prezentacje
 

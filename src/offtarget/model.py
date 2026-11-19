@@ -12,6 +12,7 @@ exp(-beta) komórek. Odpowiednik modelu liniowo-kwadratowego (LQ): beta = alpha 
 from dataclasses import asdict, dataclass
 
 import numpy as np
+from scipy.special import erf
 
 
 @dataclass(frozen=True)
@@ -48,6 +49,13 @@ class Schedule:
             return 0.0
         z = (t - np.asarray(self.times)) / self.width
         return float(np.sum(np.exp(-(z**2))) / (self.width * np.sqrt(np.pi)))
+
+    def integral(self, t0: float, t1: float) -> float:
+        """Dokładna całka U(t) dt po [t0, t1]: każdy impuls daje ½[erf((t1 - ti)/w) - erf((t0 - ti)/w)]."""
+        if not self.times:
+            return 0.0
+        ti = np.asarray(self.times)
+        return float(0.5 * np.sum(erf((t1 - ti) / self.width) - erf((t0 - ti) / self.width)))
 
     def to_dict(self) -> dict:
         return {"times": list(self.times), "width": self.width}
