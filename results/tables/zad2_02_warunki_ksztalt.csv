@@ -1,0 +1,19 @@
+kształt,plan,brzeg,M_min / M(0),czas do odrostu,M(10) / M(0)
+plateau,pole pokrywa guz,Neumann,0.1575123377893946,5.7,3.383316561774242
+plateau,pole pokrywa guz,Dirichlet,0.15751233778937387,5.7,3.383316282819762
+plateau,pole przesunięte o +6,Neumann,0.5062170367609492,5.45,2.6468276536111137
+plateau,pole przesunięte o +6,Dirichlet,0.5062170367609284,5.45,2.6468273772617406
+gaussian,pole pokrywa guz,Neumann,0.37604551808795855,4.15,4.145831387605334
+gaussian,pole pokrywa guz,Dirichlet,0.37604551808792824,4.15,4.145785871176973
+gaussian,pole przesunięte o +6,Neumann,0.6226525908848732,3.9,4.0311548850658605
+gaussian,pole przesunięte o +6,Dirichlet,0.6226525908848429,3.9,4.031109396359223
+dwa ogniska,pole pokrywa guz,Neumann,0.7840410956810341,2.8,4.216740304274442
+dwa ogniska,pole pokrywa guz,Dirichlet,0.7840410956797612,2.8,4.216701249318605
+dwa ogniska,pole przesunięte o +6,Neumann,0.8168933046044584,2.75,4.150614148569886
+dwa ogniska,pole przesunięte o +6,Dirichlet,0.8168933046031858,2.75,4.150575168675288
+przy brzegu,pole pokrywa guz,Neumann,0.09168660974157215,7.55,1.7466120746229048
+przy brzegu,pole pokrywa guz,Dirichlet,0.09088942059672338,7.55,1.7480453898755663
+przy brzegu,pole przesunięte o +6,Neumann,0.5174478195718712,5.35,2.2949431396446487
+przy brzegu,pole przesunięte o +6,Dirichlet,0.5156899228858576,5.35,2.271971812267712
+przy brzegu,pole przesunięte o -6,Neumann,0.35478054486263894,9.0,1.3605246721200004
+przy brzegu,pole przesunięte o -6,Dirichlet,0.2432246085338617,9.4,1.2460724121038556

@@ -16,7 +16,11 @@ Dwa modele dawki (argument `dose`):
   samo Fisher-KPP (jak w TumorTwin). Przy tym samym beta daje tę samą frakcję przeżycia co impuls.
   Zapis w chwili frakcji to stan tuż przed skokiem.
 
-Wszędzie warunek Neumanna (brak przepływu przez brzeg).
+Dwa warunki brzegowe (argument `bc`):
+
+- "neumann": du/dx = 0, brak przepływu przez brzeg (domyślnie, model bazowy).
+- "dirichlet": u = 0 na brzegu, czyli brzeg pochłania komórki (np. granica tkanki, w której guz nie przeżyje).
+  Węzły brzegowe trzymamy na zerze, więc masa ucieka przez brzeg, gdy guz do niego dorośnie.
 """
 from collections import Counter
 
@@ -27,6 +31,7 @@ from .model import NO_TREATMENT, Params, Schedule, beam, initial_condition
 
 METHODS = ("rk4", "cn")
 DOSES = ("pulse", "jump")
+BCS = ("neumann", "dirichlet")
 
 
 def laplacian_neumann(u: np.ndarray, dx: float) -> np.ndarray:
@@ -36,6 +41,16 @@ def laplacian_neumann(u: np.ndarray, dx: float) -> np.ndarray:
     lap[..., 0] = 2.0 * (u[..., 1] - u[..., 0]) / dx**2
     lap[..., -1] = 2.0 * (u[..., -2] - u[..., -1]) / dx**2
     return lap
+
+
+def laplacian_dirichlet(u: np.ndarray, dx: float) -> np.ndarray:
+    """Druga pochodna po x z warunkiem u = 0 na obu brzegach; w węzłach brzegowych zero, bo tam u się nie zmienia."""
+    lap = np.zeros_like(u)
+    lap[..., 1:-1] = (u[..., 2:] - 2.0 * u[..., 1:-1] + u[..., :-2]) / dx**2
+    return lap
+
+
+LAPLACIANS = {"neumann": laplacian_neumann, "dirichlet": laplacian_dirichlet}
 
 
 def rk4_step(f, t: float, u: np.ndarray, dt: float) -> np.ndarray:
@@ -81,8 +96,8 @@ def reaction_exact(u: np.ndarray, h: float, rho: float, K: float, kill: np.ndarr
     return u * np.exp(ah) / (1.0 + (rho / K) * u * g)
 
 
-def _cn_matrix(n: int, dx: float, c: float) -> np.ndarray:
-    """Macierz pasmowa (format solve_banded) dla I - c A, gdzie A to laplasjan Neumanna."""
+def _cn_matrix(n: int, dx: float, c: float, bc: str = "neumann") -> np.ndarray:
+    """Macierz pasmowa (format solve_banded) dla I - c A, gdzie A to laplasjan z warunkiem `bc`."""
     r = c / dx**2
     ab = np.zeros((3, n))
     ab[0, 1:] = -r          # nad przekątną
@@ -90,14 +105,19 @@ def _cn_matrix(n: int, dx: float, c: float) -> np.ndarray:
     ab[2, :-1] = -r         # pod przekątną
     ab[0, 1] = -2.0 * r     # wiersz 0: punkt-duch daje 2 (u1 - u0) / dx^2
     ab[2, -2] = -2.0 * r    # ostatni wiersz: 2 (u_{n-2} - u_{n-1}) / dx^2
+    if bc == "dirichlet":   # wiersze brzegowe: u_0 i u_{n-1} bez zmian (zostają zerem)
+        ab[1, 0] = ab[1, -1] = 1.0
+        ab[0, 1] = ab[2, -2] = 0.0
     return ab
 
 
-def _make_stepper(method: str, p: Params, schedule: Schedule, R: np.ndarray, dx: float, n: int):
+def _make_stepper(method: str, p: Params, schedule: Schedule, R: np.ndarray, dx: float, n: int,
+                  bc: str = "neumann"):
     """Zwraca funkcję step(t, u, h) dla wybranego schematu; `schedule` jest pusty dla dawki „jump”."""
+    laplacian = LAPLACIANS[bc]
     if method == "rk4":
         def rhs(t, v):
-            out = p.D * laplacian_neumann(v, dx) + p.rho * v * (1.0 - v / p.K)
+            out = p.D * laplacian(v, dx) + p.rho * v * (1.0 - v / p.K)
             if schedule.times:
                 out -= p.beta * R * schedule.U(t) * v
             return out
@@ -115,8 +135,11 @@ def _make_stepper(method: str, p: Params, schedule: Schedule, R: np.ndarray, dx:
             return u
         c = 0.5 * h * p.D
         if h not in cache:
-            cache[h] = _cn_matrix(n, dx, c)
-        return solve_banded((1, 1), cache[h], u + c * laplacian_neumann(u, dx))
+            cache[h] = _cn_matrix(n, dx, c, bc)
+        u = solve_banded((1, 1), cache[h], u + c * laplacian(u, dx))
+        if bc == "dirichlet":
+            u[0] = u[-1] = 0.0
+        return u
 
     def step(t, u, h):
         u = reaction(t, u, 0.5 * h)
@@ -144,7 +167,8 @@ def _jump_times(schedule: Schedule, t_save: np.ndarray, rtol: float = 1e-9) -> C
 
 
 def simulate(params: Params, schedule: Schedule, x: np.ndarray, t_save, u0: np.ndarray | None = None,
-             method: str = "rk4", dose: str = "pulse", dt_max: float | None = None) -> np.ndarray:
+             method: str = "rk4", dose: str = "pulse", dt_max: float | None = None,
+             bc: str = "neumann") -> np.ndarray:
     """Całkuje model od t_save[0] i zwraca pola u w chwilach t_save, tablica (len(t_save), len(x)).
 
     method: "rk4" (solver A) albo "cn" (solver B), zob. opis modułu.
@@ -152,25 +176,30 @@ def simulate(params: Params, schedule: Schedule, x: np.ndarray, t_save, u0: np.n
         z [t_save[0], t_save[-1]), a zapis w chwili frakcji to stan tuż przed nią. u0 to więc stan przed
         frakcją w t_save[0], a przebieg [t0, t1], potem [t1, t2] z u0 = u(t1) daje to samo co [t0, t2].
     dt_max: największy krok; domyślnie warunek stabilności dla "rk4" i 0,02 dla "cn".
+    bc: "neumann" (brak przepływu, domyślnie) albo "dirichlet" (u = 0 na brzegu; u0 na brzegu zerujemy).
     Siatka x musi być równomierna, a t_save niemalejące. Krok trafia w każdą chwilę zapisu i frakcji.
     """
     if method not in METHODS:
         raise ValueError(f"method musi być jednym z {METHODS}, jest {method!r}")
     if dose not in DOSES:
         raise ValueError(f"dose musi być jednym z {DOSES}, jest {dose!r}")
+    if bc not in BCS:
+        raise ValueError(f"bc musi być jednym z {BCS}, jest {bc!r}")
     t_save = np.asarray(t_save, dtype=float)
     if np.any(np.diff(t_save) < 0):
         raise ValueError("t_save musi być niemalejące")
     x = np.asarray(x, dtype=float)
     dx = x[1] - x[0]
     u = initial_condition(x, K=params.K) if u0 is None else np.array(u0, dtype=float)
+    if bc == "dirichlet":
+        u[0] = u[-1] = 0.0
     R = beam(x, params)
 
     smooth = schedule if dose == "pulse" else NO_TREATMENT
     jumps = _jump_times(schedule, t_save) if dose == "jump" else Counter()
     if dt_max is None:
         dt_max = stable_dt(dx, params.D, smooth, beta=params.beta, rho=params.rho) if method == "rk4" else 0.02
-    step = _make_stepper(method, params, smooth, R, dx, len(x))
+    step = _make_stepper(method, params, smooth, R, dx, len(x), bc)
 
     save_at: dict[float, list[int]] = {}
     for j, ts in enumerate(t_save):

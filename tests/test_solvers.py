@@ -180,3 +180,26 @@ def test_rk4_stable_for_huge_beta():
     assert np.all(np.isfinite(u_rk4)) and u_rk4.min() > -1e-12
     M_rk4, M_cn = tumor_mass(u_rk4, x), tumor_mass(u_cn, x)
     assert np.max(np.abs(M_rk4 - M_cn) / M_cn[0]) < 1e-3
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_dirichlet_matches_sine_decay(method):
+    """Sama dyfuzja z u = 0 na brzegach: sin(pi (x - a) / L) gaśnie jak exp(-D (pi / L)^2 t)."""
+    x, _ = grid(10.0, 400)
+    L = x[-1] - x[0]
+    u0 = np.sin(np.pi * (x - x[0]) / L)
+    u = simulate(Params(rho=0.0, beta=0.0), NO_TREATMENT, x, [0.0, 2.0], u0=u0, method=method, bc="dirichlet")
+    expected = u0 * np.exp(-((np.pi / L) ** 2) * 2.0)
+    assert np.max(np.abs(u[-1] - expected)) < 1e-4
+    assert u[-1, 0] == 0.0 and u[-1, -1] == 0.0
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_bc_irrelevant_far_from_boundary(method):
+    """Guz daleko od brzegu nie czuje warunku brzegowego."""
+    x, _ = grid(80.0, 400)
+    t = [0.0, 3.0]
+    sch = Schedule.regular(n=3, start=0.5, interval=0.5)
+    un = simulate(Params(beta=1.0, r=4.0), sch, x, t, method=method)
+    ud = simulate(Params(beta=1.0, r=4.0), sch, x, t, method=method, bc="dirichlet")
+    assert np.max(np.abs(un - ud)) < 1e-8
