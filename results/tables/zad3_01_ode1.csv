@@ -1,0 +1,4 @@
+scenariusz,c0,K_eff,M_min_PDE,M_min_ODE1,M_end_PDE,M_end_ODE1,t_odrostu_PDE,t_odrostu_ODE1,blad_L2_wzgl
+pole pokrywa guz,1.0,45.0,0.0,0.0,0.07,0.05,,,0.345
+pole za wąskie,0.491,45.0,9.383,0.413,45.51,29.21,2.75,8.4,0.716
+pole przesunięte,0.665,45.0,6.077,0.035,31.78,6.11,5.45,,0.887
