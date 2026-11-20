@@ -208,17 +208,17 @@ Na mapie (r, s) (18 × 18, r ∈ [1, 24], s ∈ [0, 15], β = 1,5) w strefie pe�
 
 ![Mapa błędu ODE_1 i ODE_2 w płaszczyźnie (r, s)](../results/figures/zad3_01c_ode_mapa.png)
 
-**Sieć rezerwuarowa** (ReservoirPy, notatnik `zad3_02_esn`, #21). ESN dostaje (M(t), całka U na kroku) i przewiduje M(t + Δt). Uczymy ją na 7 harmonogramach, a testujemy w pętli zamkniętej (własna predykcja wraca na wejście) na dwóch harmonogramach spoza treningu oraz w ekstrapolacji w czasie. Siatka hiperparametrów (units, sr, lr): najlepszy wynik daje rezerwuar 150–300 neuronów z sr 0,5–0,9; przy sr = 1,15 rośnie dryf.
+**Sieć rezerwuarowa** (ReservoirPy, notatnik `zad3_02_esn`, #21). ESN dostaje (M(t), całka U na kroku) i przewiduje M(t + Δt). Uczymy ją na **danych z PDE** (7 harmonogramów leczenia), hiperparametry (units, sr, lr, ridge) wybieramy na dwóch osobnych harmonogramach walidacyjnych, a testujemy w pętli zamkniętej (własna predykcja wraca na wejście) na dwóch harmonogramach spoza treningu oraz w ekstrapolacji w czasie (uczenie tylko na t ≤ 5,5).
 
-| Test | Błąd L2: ESN vs ODE_2 | ODE_2 vs PDE | ESN vs PDE | Czas do odrostu: PDE / ODE_2 / ESN |
-| --- | --- | --- | --- | --- |
-| A: nowy harmonogram regularny | 2,7% | 22,7% | 21,0% | 5,45 / 5,3 / 5,4 |
-| B: kurs dzielony z przerwą | 1,6% | 25,5% | 26,2% | 5,65 / 3,0 / 3,0 |
-| C: ekstrapolacja t > 5,5 | 0,4% | 23,2% | 22,8% | 5,45 / 5,3 / 5,3 |
+| Test | Błąd L2 M(t) względem PDE: ESN | ODE_2 | Czas do odrostu: PDE / ODE_2 / ESN |
+| --- | --- | --- | --- |
+| A: nowy harmonogram regularny | 5,6% | 22,7% | 5,45 / 5,3 / 5,45 |
+| B: kurs dzielony z przerwą | 6,0% | 25,5% | 5,65 / 3,0 / 3,95 |
+| C: ekstrapolacja t > 5,5 | 2,8% | 23,2% | 5,45 / 5,3 / 5,45 |
 
-**Uwaga:** ESN uczy się na trajektoriach ODE_2, a nie na danych z solvera PDE, więc odtwarza ODE_2 z błędem kilku procent, ale błąd względem PDE odziedziczyła po ODE_2 (21–26%). Sieć uczona wprost na PDE nie jest jeszcze zrobiona.
+Sieć uczona na PDE jest dokładniejsza niż ręczne ODE_2 i podąża za dalszym wzrostem guza, którego ODE_2 nie oddaje (stała pojemność K_eff). Dla pięciu ziaren rezerwuaru błąd wynosi 4–5% (A), 8–13% (B) i 3–37% (C): nowe harmonogramy są stabilne, a ekstrapolacja zależy od ziarna (dwa z pięciu ziaren są gorsze od ODE_2), więc wynik C z ziarnem 42 jest optymistyczny, a mediana to ok. 12%. Przy słabej regularyzacji (ridge = 1e-5) ekstrapolacja potrafi się rozbiec. Testowano jedną geometrię wiązki (s = 6, r = 8) i jedno β.
 
-![ESN, ODE_2 i PDE: nowe harmonogramy i ekstrapolacja](../results/figures/zad3_02_esn_porownanie.png)
+![ESN uczona na PDE, ODE_2 i PDE: nowe harmonogramy i ekstrapolacja](../results/figures/zad3_02_esn_porownanie.png)
 
 **Opcjonalnie: POD–Galerkin** (`src/offtarget/pod.py`, notatnik `zad3_03_pod_galerkin`, #22). Baza POD z migawek PDE (4 scenariusze × 201 chwil), rzut Galerkina daje układ k równań ODE o strukturze liniowo-kwadratowej. Według notatnika 99% energii migawek mieści się w 5 modach, 99,9% w 9, a 99,99% w 12. Z bazą własną dla scenariusza błąd M(t) spada poniżej 1% dla k ≈ 8–12, ale zbieżność nie jest monotoniczna: dla małych k układ potrafi „wybuchnąć” (np. k = 3 dla pola za wąskiego), bo oscylacje û < 0 wzmacnia człon kwadratowy. Baza wspólna jest mniej stabilna, a dla geometrii wiązki spoza zbioru uczącego Galerkin najczęściej wybucha, choć sam rzut pola na bazę daje 2–4% błędu przy k = 20 (tabele `zad3_03_pod_galerkin*.csv`). Model zredukowany nie przenosi się więc wiarygodnie na inne R(x) bez stabilizacji.
 

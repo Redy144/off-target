@@ -1,4 +1,4 @@
-eksperyment,L2_ESN_vs_ODE2,L2_ODE2_vs_PDE,L2_ESN_vs_PDE,M_min_PDE,M_min_ODE2,M_min_ESN,t_odrostu_PDE,t_odrostu_ODE2,t_odrostu_ESN
-"Test A (bazowy, nowy harmonogram)",0.0269,0.2272,0.2102,6.077,7.903,7.525,5.45,5.3,5.4
-"Test B (kurs dzielony, nowy harmonogram)",0.0163,0.2548,0.262,5.619,7.301,7.364,5.65,3.0,3.0
-"Test C (ekstrapolacja t > 5,5 na A)",0.0041,0.2322,0.2276,6.077,7.903,7.903,5.45,5.3,5.3
+eksperyment,L2_ESN_vs_PDE,L2_ODE2_vs_PDE,M_min_PDE,M_min_ODE2,M_min_ESN,t_odrostu_PDE,t_odrostu_ODE2,t_odrostu_ESN
+"Test A (bazowy, nowy harmonogram)",0.0559,0.2272,6.077,7.903,6.777,5.45,5.3,5.45
+"Test B (kurs dzielony, nowy harmonogram)",0.0601,0.2548,5.619,7.301,5.673,5.65,3.0,3.95
+"Test C (ekstrapolacja t > 5,5 na A)",0.0281,0.2322,6.077,7.903,6.077,5.45,5.3,5.45
