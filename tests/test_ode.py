@@ -63,3 +63,53 @@ def test_initial_beam_fraction_bounds():
     assert c_full > 0.99
     assert 0.35 < c_narrow < 0.65
     assert c_far < 1e-4
+
+
+def test_ode2_diffusion_conserves_mass_and_relaxes_to_c():
+    from offtarget.ode import ODE2Params, simulate_ode2
+
+    t = np.linspace(0.0, 10.0, 101)
+    p = ODE2Params(rho=0.0, K_eff=30.0, beta=0.0, c=0.7, gamma=1.5)
+    mi, mo = simulate_ode2(2.0, 10.0, p, NO_TREATMENT, t)
+    assert np.allclose(mi + mo, 12.0, rtol=1e-10, atol=1e-10)
+    # Równowaga wymiany: M_in -> c * M = 8.4
+    assert mi[-1] == pytest.approx(0.7 * 12.0, rel=1e-5)
+
+
+def test_ode2_full_coverage_matches_ode1():
+    from offtarget.ode import ODE2Params, simulate_ode2
+
+    t = np.linspace(0.0, 10.0, 201)
+    sched = Schedule.regular(n=10, start=1.0, interval=0.4)
+    p1 = ODE1Params(rho=1.0, K_eff=30.0, beta=1.5, c=1.0)
+    p2 = ODE2Params(rho=1.0, K_eff=30.0, beta=1.5, c=1.0, gamma=1.0)
+    m1 = simulate_ode1(12.0, p1, sched, t)
+    mi, mo = simulate_ode2(12.0, 0.0, p2, sched, t)
+    assert np.allclose(mo, 0.0, atol=1e-12)
+    assert np.allclose(mi, m1, rtol=1e-3, atol=1e-3)
+
+
+def test_ode2_fast_mixing_approaches_ode1():
+    from offtarget.ode import ODE2Params, simulate_ode2
+
+    t = np.linspace(0.0, 8.0, 161)
+    sched = Schedule.regular(n=6, start=1.0, interval=0.5)
+    c = 0.65
+    p1 = ODE1Params(rho=1.0, K_eff=30.0, beta=1.2, c=c)
+    p2 = ODE2Params(rho=1.0, K_eff=30.0, beta=1.2, c=c, gamma=200.0)
+    m1 = simulate_ode1(12.0, p1, sched, t)
+    mi, mo = simulate_ode2(12.0 * c, 12.0 * (1.0 - c), p2, sched, t)
+    assert np.allclose(mi + mo, m1, rtol=0.05, atol=0.1)
+
+
+@pytest.mark.parametrize("dose", ["pulse", "jump"])
+def test_ode2_uncoupled_margin_survives_huge_dose(dose):
+    from offtarget.ode import ODE2Params, simulate_ode2
+
+    t = np.linspace(0.0, 6.0, 121)
+    sched = Schedule.regular(n=8, start=1.0, interval=0.4)
+    p2 = ODE2Params(rho=1.0, K_eff=30.0, beta=20.0, c=0.7, gamma=0.0)
+    mi, mo = simulate_ode2(8.4, 3.6, p2, sched, t, dose=dose)
+    assert np.all(mi >= 0.0) and np.all(mo >= 0.0)
+    assert mi[-1] < 1e-6
+    assert mo[-1] > 20.0  # margines poza wiązką odrasta logistycznie
