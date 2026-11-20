@@ -137,8 +137,8 @@ Na razie syntetyczne: z naszego solvera, w kilku chwilach i z szumem, tak jak ko
 | Data | Zadanie | Stan |
 | --- | --- | --- |
 | 23.10 | 1. Literatura, model PDE i jego zachowanie | zrobione |
-| 6.11 | 2. Solvery i rozdzielczości, skrajne parametry, warunki brzegowe, uproszczenia członów | w toku: dwa solvery, dwa modele dawki, tabela błąd a czas, cztery scenariusze (niżej); brakuje warunków brzegowych, skrajnych parametrów, uproszczeń członów i mapy niedopasowania |
-| 20.11 | 3. Surogat ODE dla masy guza i sieć rezerwuarowa | do zrobienia |
+| 6.11 | 2. Solvery i rozdzielczości, skrajne parametry, warunki brzegowe, uproszczenia członów | zrobione: dwa solvery, dwa modele dawki, tabela błąd a czas, scenariusze (niżej); warunki brzegowe, skrajne parametry, uproszczenia członów, mapa niedopasowania i generator danych mają kod, testy i wyniki w `results/` (notatniki `zad2_02_warunki`–`zad2_06_mapa`), opis wyników dopiszemy w osobnej sekcji |
+| 20.11 | 3. Surogat ODE dla masy guza i sieć rezerwuarowa | zrobione: ODE_1, ODE_2 z ręcznym doborem parametrów, ESN i opcjonalnie POD–Galerkin (niżej); brak jeszcze slajdów z prezentacji (#23) |
 | 4.12 | 4. Analiza wrażliwości (Morris, Sobol), modele uproszczone; 5. asymilacja danych (ABC, 4D-Var) | do zrobienia |
 | 18.12 | 6. NODE i UDE na modelu ODE | do zrobienia |
 | 15.01 | 7–8. PINN, supermodel z modeli ODE, SuperNet z PINN-ów, porównanie wszystkich modeli | w toku: PINN z terapią odtwarza trzy scenariusze z błędem 1–3% (niżej) |
@@ -173,6 +173,54 @@ Pole za wąskie daje odrost z obu brzegów, pole przesunięte z nienapromienione
 ![Masa guza dla czterech planów](../results/figures/zad2_02_masa.png)
 
 ![Profile gęstości: pole za wąskie i przesunięte](../results/figures/zad2_02_profile.png)
+
+## Wyniki: Zadanie 3
+
+Surogaty liczą się na całkowitej masie guza M(t); jednostki i parametry jak w zadaniu 2 (Δx = 0,2 w porównaniach, solver CN). Kod: `src/offtarget/ode.py` i `src/offtarget/pod.py`, testy `tests/test_ode.py` i `tests/test_pod.py` (17 testów), literatura w `literatura.md` (#17).
+
+**ODE_1: jeden przedział** (notatnik `zad3_01_ode`, #18). Całkujemy PDE po obszarze; przy warunkach Neumanna dyfuzja znika z całki. Żeby zamknąć równanie względem samego M, przybliżamy ∫u² dx ≈ M²/W_eff (stąd K_eff = K·W_eff) i ∫R·u dx ≈ c·M, gdzie c to stały ułamek guza w wiązce:
+
+```latex
+\frac{dM}{dt} = \rho M\left(1-\frac{M}{K_{\mathrm{eff}}}\right) - \beta\, c\, U(t)\, M
+```
+
+Gdy c ≈ 1 (pole pokrywa guz), ODE_1 dobrze oddaje spadek masy. Gdy część guza jest poza polem, model przeszacowuje leczenie: w PDE po pierwszej frakcji niemal cała pozostała masa leży poza wiązką i kolejne frakcje jej nie zabijają, a w ODE_1 stałe c tego nie widzi.
+
+**ODE_2: dwa przedziały** (notatnik `zad3_01b_ode2`, #19). Masę dzielimy na M_in (w polu) i M_out (poza polem); dawka działa tylko na M_in, a dyfuzja wymienia komórki przez brzeg pola z tempem γ = γ₀·D:
+
+```latex
+\dot M_{\mathrm{in}}=\rho M_{\mathrm{in}}\left(1-\tfrac{M}{K_{\mathrm{eff}}}\right)-\beta U(t) M_{\mathrm{in}}+\gamma\,(c\,M_{\mathrm{out}}-(1-c)\,M_{\mathrm{in}}),\qquad
+\dot M_{\mathrm{out}}=\rho M_{\mathrm{out}}\left(1-\tfrac{M}{K_{\mathrm{eff}}}\right)-\gamma\,(c\,M_{\mathrm{out}}-(1-c)\,M_{\mathrm{in}})
+```
+
+Dla γ → ∞ ODE_2 redukuje się do ODE_1, a dla c = 1 i M_out(0) = 0 oba modele są tożsame (sprawdzone testami). ODE_2 odtwarza odrost z nienapromienionego marginesu, którego ODE_1 w ogóle nie widzi.
+
+**Ręczny dobór parametrów** (notatnik `zad3_01c_ode_porownanie`, #20). Bez optymalizatora: c = c₀ = ∫R·u₀ dx / ∫u₀ dx, K_eff przeglądany ręcznie po {25, 30, 35}, γ₀ po {0,4, 0,8, 1,2, 1,6}; do porównań K_eff = 30 i γ = 1,2·D.
+
+| Scenariusz | M_min: PDE / ODE_1 / ODE_2 | Czas do odrostu: PDE / ODE_1 / ODE_2 | Błąd L2 M(t): ODE_1 / ODE_2 |
+| --- | --- | --- | --- |
+| pole pokrywa guz, duża dawka | 0 / 0 / 0 | brak | 23% / 23% |
+| pole pokrywa guz, mała dawka | 2,39 / 3,41 / 3,41 | 6,85 / 6,35 / 6,35 | 18% / 18% |
+| pole za wąskie | 9,38 / 0,33 / 11,87 | 2,75 / 8,8 / 1,5 | 78% / 23% |
+| pole przesunięte | 6,08 / 0,03 / 7,90 | 5,45 / brak / 5,3 | 90% / 23% |
+
+Na mapie (r, s) (18 × 18, r ∈ [1, 24], s ∈ [0, 15], β = 1,5) w strefie pełnego pokrycia oba modele mają błąd 18–23%, a w strefie niedopasowania ODE_2 wygrywa z ODE_1 pod względem trajektorii, M_min i czasu odrostu. Ograniczenia: stała pojemność K_eff nie oddaje liniowego poszerzania się fali Fishera (bez leczenia guz w PDE rośnie z 12 do 45,8), więc masa końcowa nasyca się za wcześnie; w wąskim pasie tuż pod przekątną mapy (r ≈ s + 8 … s + 12) błąd jest podwyższony, bo front dyfunduje poza pole jeszcze przed pierwszą frakcją, a c₀ tego nie zna. Dla „pole za wąskie” ODE_2 wypada gorzej na czasie odrostu (1,5 wobec 2,75).
+
+![Mapa błędu ODE_1 i ODE_2 w płaszczyźnie (r, s)](../results/figures/zad3_01c_ode_mapa.png)
+
+**Sieć rezerwuarowa** (ReservoirPy, notatnik `zad3_02_esn`, #21). ESN dostaje (M(t), całka U na kroku) i przewiduje M(t + Δt). Uczymy ją na 7 harmonogramach, a testujemy w pętli zamkniętej (własna predykcja wraca na wejście) na dwóch harmonogramach spoza treningu oraz w ekstrapolacji w czasie. Siatka hiperparametrów (units, sr, lr): najlepszy wynik daje rezerwuar 150–300 neuronów z sr 0,5–0,9; przy sr = 1,15 rośnie dryf.
+
+| Test | Błąd L2: ESN vs ODE_2 | ODE_2 vs PDE | ESN vs PDE | Czas do odrostu: PDE / ODE_2 / ESN |
+| --- | --- | --- | --- | --- |
+| A: nowy harmonogram regularny | 2,7% | 22,7% | 21,0% | 5,45 / 5,3 / 5,4 |
+| B: kurs dzielony z przerwą | 1,6% | 25,5% | 26,2% | 5,65 / 3,0 / 3,0 |
+| C: ekstrapolacja t > 5,5 | 0,4% | 23,2% | 22,8% | 5,45 / 5,3 / 5,3 |
+
+**Uwaga:** ESN uczy się na trajektoriach ODE_2, a nie na danych z solvera PDE, więc odtwarza ODE_2 z błędem kilku procent, ale błąd względem PDE odziedziczyła po ODE_2 (21–26%). Sieć uczona wprost na PDE nie jest jeszcze zrobiona.
+
+![ESN, ODE_2 i PDE: nowe harmonogramy i ekstrapolacja](../results/figures/zad3_02_esn_porownanie.png)
+
+**Opcjonalnie: POD–Galerkin** (`src/offtarget/pod.py`, notatnik `zad3_03_pod_galerkin`, #22). Baza POD z migawek PDE (4 scenariusze × 201 chwil), rzut Galerkina daje układ k równań ODE o strukturze liniowo-kwadratowej. Według notatnika 99% energii migawek mieści się w 5 modach, 99,9% w 9, a 99,99% w 12. Z bazą własną dla scenariusza błąd M(t) spada poniżej 1% dla k ≈ 8–12, ale zbieżność nie jest monotoniczna: dla małych k układ potrafi „wybuchnąć” (np. k = 3 dla pola za wąskiego), bo oscylacje û < 0 wzmacnia człon kwadratowy. Baza wspólna jest mniej stabilna, a dla geometrii wiązki spoza zbioru uczącego Galerkin najczęściej wybucha, choć sam rzut pola na bazę daje 2–4% błędu przy k = 20 (tabele `zad3_03_pod_galerkin*.csv`). Model zredukowany nie przenosi się więc wiarygodnie na inne R(x) bez stabilizacji.
 
 ## Wyniki wstępne: Zadanie 7
 
