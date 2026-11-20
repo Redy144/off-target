@@ -1,0 +1,5 @@
+scenariusz,c0,M_min_PDE,M_min_ODE1,M_min_ODE2,t_odrostu_PDE,t_odrostu_ODE1,t_odrostu_ODE2,blad_L2_ODE1,blad_L2_ODE2,MAE_ODE1,MAE_ODE2
+"pole pokrywa guz, duża dawka",1.0,0.0,0.0,0.0,,,,0.227,0.227,0.33,0.33
+"pole pokrywa guz, mała dawka",1.0,2.394,3.414,3.414,6.85,6.35,6.35,0.18,0.18,2.39,2.39
+pole za wąskie,0.491,9.383,0.329,11.869,2.75,8.8,1.5,0.776,0.234,17.6,4.62
+pole przesunięte,0.665,6.077,0.029,7.903,5.45,,5.3,0.898,0.227,12.1,2.9
