@@ -1,0 +1,65 @@
+baza,scenariusz,k,status,blad_L2_M,blad_L2_u,min_u_hat
+własna,"pole pokrywa guz, duża dawka",1,ok,0.03045,0.05485,0.0
+własna,"pole pokrywa guz, duża dawka",2,ok,0.00317,0.00493,-0.0
+własna,"pole pokrywa guz, duża dawka",3,ok,0.00231,0.00181,-0.0001
+własna,"pole pokrywa guz, duża dawka",5,ok,0.00736,0.00543,-0.0
+własna,"pole pokrywa guz, duża dawka",8,ok,0.00051,0.00038,-0.0
+własna,"pole pokrywa guz, duża dawka",12,ok,0.00011,8e-05,-0.0
+własna,"pole pokrywa guz, duża dawka",15,ok,3e-05,2e-05,-0.0
+własna,"pole pokrywa guz, duża dawka",20,ok,2e-05,5e-05,-0.0
+własna,"pole pokrywa guz, mała dawka",1,ok,0.20008,0.2816,0.0
+własna,"pole pokrywa guz, mała dawka",2,ok,0.0372,0.07625,-0.0781
+własna,"pole pokrywa guz, mała dawka",3,ok,0.02913,0.04366,-0.042
+własna,"pole pokrywa guz, mała dawka",5,ok,0.01129,0.01515,-0.0037
+własna,"pole pokrywa guz, mała dawka",8,ok,0.0026,0.0034,-0.0003
+własna,"pole pokrywa guz, mała dawka",12,ok,0.00019,0.00024,-0.0
+własna,"pole pokrywa guz, mała dawka",15,ok,0.00014,0.00017,-0.0
+własna,"pole pokrywa guz, mała dawka",20,ok,3e-05,4e-05,-0.0
+własna,pole za wąskie,1,ok,0.2596,0.38189,0.0
+własna,pole za wąskie,2,ok,0.21327,0.30342,-0.0131
+własna,pole za wąskie,3,wybuch,,,
+własna,pole za wąskie,5,ok,0.07345,0.10284,-0.0769
+własna,pole za wąskie,8,ok,0.02906,0.04173,-0.021
+własna,pole za wąskie,12,ok,0.00621,0.00922,-0.0025
+własna,pole za wąskie,15,ok,0.00058,0.00091,-0.0005
+własna,pole za wąskie,20,ok,0.0001,0.00014,-0.0
+własna,pole przesunięte,1,ok,0.30463,0.42537,0.0
+własna,pole przesunięte,2,ok,0.24373,0.34102,-0.1087
+własna,pole przesunięte,3,ok,0.1321,0.17038,-0.1494
+własna,pole przesunięte,5,wybuch,,,
+własna,pole przesunięte,8,ok,0.01974,0.02289,-0.0108
+własna,pole przesunięte,12,ok,0.03391,0.03233,-0.0059
+własna,pole przesunięte,15,ok,0.00099,0.00153,-0.0005
+własna,pole przesunięte,20,ok,0.00033,0.0003,-0.0001
+wspólna,"pole pokrywa guz, duża dawka",1,ok,0.39456,0.68928,0.0
+wspólna,"pole pokrywa guz, duża dawka",2,ok,0.15638,0.33775,-0.061
+wspólna,"pole pokrywa guz, duża dawka",3,ok,0.03496,0.07032,-0.0645
+wspólna,"pole pokrywa guz, duża dawka",5,ok,0.0046,0.04061,-0.0308
+wspólna,"pole pokrywa guz, duża dawka",8,ok,0.05291,0.05264,-0.0301
+wspólna,"pole pokrywa guz, duża dawka",12,ok,0.7226,0.627,-0.0574
+wspólna,"pole pokrywa guz, duża dawka",15,wybuch,,,
+wspólna,"pole pokrywa guz, duża dawka",20,ok,0.0116,0.01961,-0.0343
+wspólna,"pole pokrywa guz, mała dawka",1,ok,0.30135,0.43842,0.0
+wspólna,"pole pokrywa guz, mała dawka",2,ok,0.15916,0.24105,-0.061
+wspólna,"pole pokrywa guz, mała dawka",3,ok,0.08605,0.13987,-0.0645
+wspólna,"pole pokrywa guz, mała dawka",5,wybuch,,,
+wspólna,"pole pokrywa guz, mała dawka",8,ok,0.21749,0.25891,-0.0301
+wspólna,"pole pokrywa guz, mała dawka",12,ok,0.18721,0.23985,-0.0092
+wspólna,"pole pokrywa guz, mała dawka",15,wybuch,,,
+wspólna,"pole pokrywa guz, mała dawka",20,ok,0.01023,0.03329,-0.135
+wspólna,pole za wąskie,1,ok,0.20689,0.42037,0.0
+wspólna,pole za wąskie,2,ok,0.1842,0.46467,-0.0927
+wspólna,pole za wąskie,3,ok,0.21855,0.35796,-0.0645
+wspólna,pole za wąskie,5,wybuch,,,
+wspólna,pole za wąskie,8,ok,0.01232,0.05307,-0.0648
+wspólna,pole za wąskie,12,ok,0.02277,0.03815,-0.0353
+wspólna,pole za wąskie,15,ok,0.03658,0.05708,-0.0143
+wspólna,pole za wąskie,20,ok,0.00566,0.00881,-0.0031
+wspólna,pole przesunięte,1,ok,0.32536,0.66082,0.0
+wspólna,pole przesunięte,2,ok,0.27559,0.4913,-0.1344
+wspólna,pole przesunięte,3,ok,0.28901,0.45934,-0.1401
+wspólna,pole przesunięte,5,ok,0.49749,0.50283,-0.1159
+wspólna,pole przesunięte,8,wybuch,,,
+wspólna,pole przesunięte,12,ok,0.01985,0.15603,-0.145
+wspólna,pole przesunięte,15,wybuch,,,
+wspólna,pole przesunięte,20,ok,0.12177,0.18594,-1.1015

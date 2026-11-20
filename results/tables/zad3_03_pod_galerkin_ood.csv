@@ -1,0 +1,31 @@
+geometria,k,status,blad_L2_M,blad_L2_u
+"s=3, r=10 (interpolacja)",5,wybuch,,
+"s=3, r=10 (interpolacja)",8,wybuch,,
+"s=3, r=10 (interpolacja)",12,wybuch,,
+"s=3, r=10 (interpolacja)",15,wybuch,,
+"s=3, r=10 (interpolacja)",20,wybuch,,
+"s=3, r=10 (interpolacja)",5,rzut (granica),,0.20166
+"s=3, r=10 (interpolacja)",8,rzut (granica),,0.1099
+"s=3, r=10 (interpolacja)",12,rzut (granica),,0.07179
+"s=3, r=10 (interpolacja)",15,rzut (granica),,0.055
+"s=3, r=10 (interpolacja)",20,rzut (granica),,0.03793
+"s=10, r=6 (ekstrapolacja)",5,ok,0.36169,0.442
+"s=10, r=6 (ekstrapolacja)",8,ok,0.32538,0.4989
+"s=10, r=6 (ekstrapolacja)",12,wybuch,,
+"s=10, r=6 (ekstrapolacja)",15,wybuch,,
+"s=10, r=6 (ekstrapolacja)",20,wybuch,,
+"s=10, r=6 (ekstrapolacja)",5,rzut (granica),,0.21604
+"s=10, r=6 (ekstrapolacja)",8,rzut (granica),,0.08407
+"s=10, r=6 (ekstrapolacja)",12,rzut (granica),,0.04926
+"s=10, r=6 (ekstrapolacja)",15,rzut (granica),,0.03808
+"s=10, r=6 (ekstrapolacja)",20,rzut (granica),,0.02177
+"s=0, r=5, beta=1.0",5,wybuch,,
+"s=0, r=5, beta=1.0",8,wybuch,,
+"s=0, r=5, beta=1.0",12,wybuch,,
+"s=0, r=5, beta=1.0",15,wybuch,,
+"s=0, r=5, beta=1.0",20,wybuch,,
+"s=0, r=5, beta=1.0",5,rzut (granica),,0.11986
+"s=0, r=5, beta=1.0",8,rzut (granica),,0.06423
+"s=0, r=5, beta=1.0",12,rzut (granica),,0.03592
+"s=0, r=5, beta=1.0",15,rzut (granica),,0.0177
+"s=0, r=5, beta=1.0",20,rzut (granica),,0.01181
