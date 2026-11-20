@@ -62,17 +62,24 @@ def rk4_step(f, t: float, u: np.ndarray, dt: float) -> np.ndarray:
     return u + dt / 6.0 * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
 
 
-def stable_dt(dx: float, D: float, schedule: Schedule, safety: float = 0.4, dt_cap: float = 0.05) -> float:
+def stable_dt(dx: float, D: float, schedule: Schedule, safety: float = 0.4, dt_cap: float = 0.05,
+              beta: float = 0.0, rho: float = 0.0) -> float:
     """Krok czasowy dla jawnego RK4.
 
     Dyfuzja: RK4 jest stabilny dla dt <= 0,696 dx^2 / D, bierzemy zapas `safety`.
     Dawka: krok musi rozdzielić impuls, więc dt <= width / 5.
+    Zabijanie i wzrost: w szczycie impulsu tempo zabijania to beta / (width sqrt(pi)), a RK4 dla du/dt = -lambda u
+    jest stabilny dla lambda dt <= 2,78; bierzemy lambda dt <= 2 (ważne dla bardzo dużych beta, #12). To samo dla rho.
     """
     dt = dt_cap
     if D > 0:
         dt = min(dt, safety * dx**2 / D)
     if schedule.times:
         dt = min(dt, schedule.width / 5)
+        if beta > 0:
+            dt = min(dt, 2.0 * schedule.width * np.sqrt(np.pi) / beta)
+    if rho > 0:
+        dt = min(dt, 2.0 / rho)
     return dt
 
 
@@ -191,7 +198,7 @@ def simulate(params: Params, schedule: Schedule, x: np.ndarray, t_save, u0: np.n
     smooth = schedule if dose == "pulse" else NO_TREATMENT
     jumps = _jump_times(schedule, t_save) if dose == "jump" else Counter()
     if dt_max is None:
-        dt_max = stable_dt(dx, params.D, smooth) if method == "rk4" else 0.02
+        dt_max = stable_dt(dx, params.D, smooth, beta=params.beta, rho=params.rho) if method == "rk4" else 0.02
     step = _make_stepper(method, params, smooth, R, dx, len(x), bc)
 
     save_at: dict[float, list[int]] = {}

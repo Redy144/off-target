@@ -169,6 +169,19 @@ def test_save_and_load_roundtrip(tmp_path):
     assert np.array_equal(back["x"], x)
 
 
+def test_rk4_stable_for_huge_beta():
+    """Bardzo duże beta (#12): domyślny krok RK4 uwzględnia tempo zabijania, więc wynik zgadza się z solverem B."""
+    x, _ = grid(80.0, 400)
+    t = np.linspace(0.0, 3.0, 31)
+    schedule = Schedule.regular(n=3, start=1.0, interval=0.4)
+    p = Params(beta=200.0, r=20.0)
+    u_rk4 = simulate(p, schedule, x, t, method="rk4")
+    u_cn = simulate(p, schedule, x, t, method="cn", dt_max=0.002)
+    assert np.all(np.isfinite(u_rk4)) and u_rk4.min() > -1e-12
+    M_rk4, M_cn = tumor_mass(u_rk4, x), tumor_mass(u_cn, x)
+    assert np.max(np.abs(M_rk4 - M_cn) / M_cn[0]) < 1e-3
+
+
 @pytest.mark.parametrize("method", METHODS)
 def test_dirichlet_matches_sine_decay(method):
     """Sama dyfuzja z u = 0 na brzegach: sin(pi (x - a) / L) gaśnie jak exp(-D (pi / L)^2 t)."""
